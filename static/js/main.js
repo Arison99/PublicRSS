@@ -62,3 +62,25 @@ function insertFeedUrl(url) {
         showToast("Inserted feed URL into input!");
     }
 }
+
+function filterPresets(category) {
+    const items = document.querySelectorAll(".preset-item");
+    const buttons = document.querySelectorAll(".preset-btn");
+
+    buttons.forEach(btn => {
+        if (btn.dataset.cat === category) {
+            btn.className = "preset-btn px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-400 font-semibold border border-orange-500/30";
+        } else {
+            btn.className = "preset-btn px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white";
+        }
+    });
+
+    items.forEach(item => {
+        if (category === "all" || item.dataset.category === category) {
+            item.style.display = "inline-flex";
+        } else {
+            item.style.display = "none";
+        }
+    });
+}
+

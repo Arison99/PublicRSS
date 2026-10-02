@@ -16,6 +16,7 @@
   "tests/test_feeds.py::test_sanitizer_html_and_script_stripping",
   "tests/test_feeds.py::test_sanitizer_url_stripping",
   "tests/test_feeds.py::test_ssrf_safety_checks",
+  "tests/test_feeds.py::test_url_normalization_substack_and_reddit",
   "tests/test_prompt_injection.py::test_adversarial_rss_sanitization",
   "tests/test_prompt_injection.py::test_layer_3_blocks_delimiter_leaks",
   "tests/test_prompt_injection.py::test_layer_3_blocks_jailbroken_output",

@@ -76,6 +76,20 @@ def test_ssrf_safety_checks():
     assert safe
 
 
+def test_url_normalization_substack_and_reddit():
+    from feeds.fetcher import normalize_feed_url
+
+    # Substack homepage auto-normalized to /feed
+    assert normalize_feed_url("https://astralcodexten.substack.com") == "https://astralcodexten.substack.com/feed"
+    assert normalize_feed_url("astralcodexten.substack.com/") == "https://astralcodexten.substack.com/feed"
+    assert normalize_feed_url("https://astralcodexten.substack.com/feed") == "https://astralcodexten.substack.com/feed"
+
+    # Reddit community auto-normalized to /.rss
+    assert normalize_feed_url("https://www.reddit.com/r/technology") == "https://www.reddit.com/r/technology/.rss"
+    assert normalize_feed_url("reddit.com/r/programming/") == "https://reddit.com/r/programming/.rss"
+    assert normalize_feed_url("https://www.reddit.com/r/programming/.rss") == "https://www.reddit.com/r/programming/.rss"
+
+
 def test_feed_service_produces_contract_payload():
     ingested = FeedIngestionService.ingest_content(SAMPLE_VALID_RSS, feed_url="https://rust-gazette.example.com/rss")
 

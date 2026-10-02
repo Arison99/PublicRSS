@@ -37,21 +37,42 @@
                 </div>
             </div>
 
-            <!-- Quick Preset Samples -->
-            <div>
-                <span class="text-xs font-semibold text-slate-400 block mb-2">Or try a vetted example feed:</span>
-                <div class="flex flex-wrap gap-2">
+            <!-- Quick Preset Samples with Category Filter -->
+            <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-300">Or pick a curated feed to test:</span>
+                    <div class="flex items-center gap-1 text-[11px]" id="preset-filter-pills">
+                        <button type="button" onclick="filterPresets('all')" class="preset-btn px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-400 font-semibold border border-orange-500/30" data-cat="all">All</button>
+                        <button type="button" onclick="filterPresets('Substack')" class="preset-btn px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white" data-cat="Substack">Substack</button>
+                        <button type="button" onclick="filterPresets('Reddit')" class="preset-btn px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white" data-cat="Reddit">Reddit</button>
+                        <button type="button" onclick="filterPresets('Tech News')" class="preset-btn px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hover:text-white" data-cat="Tech News">Tech</button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto pr-1" id="presets-container">
                     {% for p in popular_feeds %}
                         <button 
                             type="button" 
+                            data-category="{{ p.category }}"
                             onclick="insertFeedUrl('{{ p.url }}')"
-                            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-orange-500/50 hover:bg-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-all">
-                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            class="preset-item inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-orange-500/50 hover:bg-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-all">
+                            <span class="w-1.5 h-1.5 rounded-full {% if p.category == 'Substack' %}bg-orange-400{% elif p.category == 'Reddit' %}bg-rose-400{% else %}bg-sky-400{% endif %}"></span>
                             <span>{{ p.name }}</span>
                             <span class="text-[10px] text-slate-500">({{ p.badge }})</span>
                         </button>
                     {% endfor %}
                 </div>
+            </div>
+
+            <!-- Rate Limit & Normalization Advisory -->
+            <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-400 space-y-1">
+                <div class="flex items-center gap-1.5 text-slate-300 font-semibold">
+                    <span class="text-orange-400">💡</span>
+                    <span>Intelligent URL Normalization & Rate Limit Handling</span>
+                </div>
+                <p class="leading-relaxed text-[11px]">
+                    Substack domains are auto-normalized to <code class="text-slate-300 font-mono">/feed</code>. Reddit community links are converted to RSS. If you encounter an <strong>HTTP 429 error</strong> on a user-submitted link, this indicates the remote provider (such as Reddit) has temporarily rate-limited datacenter IP requests. The engine provides exact countdown timers and automatically attempts backoff retries.
+                </p>
             </div>
 
             <!-- Submit Button with Processing Spinner -->

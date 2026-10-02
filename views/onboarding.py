@@ -11,25 +11,86 @@ from ai.provider import GemmaProvider, generate_fallback_mock_proposal
 
 
 POPULAR_FEEDS = [
+    # Top Substack Newsletters
+    {
+        "name": "Astral Codex Ten",
+        "url": "https://astralcodexten.substack.com/feed",
+        "badge": "Substack / AI & Ideas",
+        "category": "Substack",
+    },
+    {
+        "name": "The Pragmatic Engineer",
+        "url": "https://newsletter.pragmaticengineer.com/feed",
+        "badge": "Substack / Software",
+        "category": "Substack",
+    },
+    {
+        "name": "ByteByteGo Newsletter",
+        "url": "https://blog.bytebytego.com/feed",
+        "badge": "Substack / Architecture",
+        "category": "Substack",
+    },
+    {
+        "name": "Lenny's Newsletter",
+        "url": "https://lenny.substack.com/feed",
+        "badge": "Substack / Product",
+        "category": "Substack",
+    },
+    {
+        "name": "Platformer",
+        "url": "https://www.platformer.news/feed",
+        "badge": "Substack / Policy",
+        "category": "Substack",
+    },
+    # Top Reddit Communities
+    {
+        "name": "r/programming",
+        "url": "https://www.reddit.com/r/programming/.rss",
+        "badge": "Reddit / Dev",
+        "category": "Reddit",
+    },
+    {
+        "name": "r/MachineLearning",
+        "url": "https://www.reddit.com/r/MachineLearning/.rss",
+        "badge": "Reddit / AI",
+        "category": "Reddit",
+    },
+    {
+        "name": "r/LocalLLaMA",
+        "url": "https://www.reddit.com/r/LocalLLaMA/.rss",
+        "badge": "Reddit / LLMs",
+        "category": "Reddit",
+    },
+    {
+        "name": "r/technology",
+        "url": "https://www.reddit.com/r/technology/.rss",
+        "badge": "Reddit / Tech",
+        "category": "Reddit",
+    },
+    # Independent Tech Blogs & News
     {
         "name": "Hacker News: Front Page",
         "url": "https://news.ycombinator.com/rss",
         "badge": "Tech News",
+        "category": "Tech News",
     },
     {
         "name": "Simon Willison's Weblog",
         "url": "https://simonwillison.net/atom/everything/",
         "badge": "AI & Software",
+        "category": "Tech News",
     },
     {
         "name": "Ars Technica",
         "url": "https://feeds.arstechnica.com/arstechnica/index",
         "badge": "Science & Tech",
+        "category": "Tech News",
     },
     {
         "name": "Python Insider",
         "url": "https://blog.python.org/feeds/posts/default",
         "badge": "Programming",
+        "category": "Tech News",
     },
 ]
 
