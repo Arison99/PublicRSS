@@ -115,7 +115,7 @@ Make sure you have the following installed on your machine:
 Open your terminal (macOS/Linux) or Command Prompt / PowerShell (Windows) and run:
 
 ```bash
-git clone https://github.com/your-username/publicrss.git
+git clone https://github.com/arison99/publicrss.git
 cd publicrss
 ```
 
