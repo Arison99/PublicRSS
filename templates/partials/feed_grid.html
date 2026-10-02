@@ -1,0 +1,128 @@
+{% if feeds %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for feed in feeds %}
+            <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 flex flex-col justify-between hover:border-slate-700 hover:shadow-xl hover:shadow-orange-500/5 transition-all group">
+                <div>
+                    <!-- Top Category and Tone Badges -->
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                            {{ feed.suggested_collection }}
+                        </span>
+                        
+                        <div class="flex items-center gap-1.5">
+                            <!-- Audience Pill -->
+                            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md uppercase tracking-wider
+                                {% if feed.target_audience == 'beginner' %}bg-emerald-500/10 text-emerald-400 border border-emerald-500/20
+                                {% elif feed.target_audience == 'intermediate' %}bg-sky-500/10 text-sky-400 border border-sky-500/20
+                                {% elif feed.target_audience == 'advanced' %}bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
+                                {% elif feed.target_audience == 'expert' %}bg-purple-500/10 text-purple-400 border border-purple-500/20
+                                {% else %}bg-slate-800 text-slate-300 border border-slate-700{% endif %}">
+                                {{ feed.target_audience }}
+                            </span>
+                            <!-- Tone Pill -->
+                            <span class="text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-800/80 text-slate-400 border border-slate-700">
+                                {{ feed.content_tone }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Feed Title & Publisher -->
+                    <h3 class="text-lg font-bold text-white group-hover:text-orange-300 transition-colors line-clamp-1 mb-1">
+                        {{ feed.title }}
+                    </h3>
+                    {% if feed.publisher %}
+                        <p class="text-xs text-slate-400 mb-3 flex items-center gap-1">
+                            <span>by</span>
+                            <span class="font-medium text-slate-300">{{ feed.publisher }}</span>
+                        </p>
+                    {% endif %}
+
+                    <!-- AI Synthesized Description -->
+                    <p class="text-sm text-slate-300 leading-relaxed mb-4 line-clamp-3">
+                        {{ feed.ai_description or feed.description }}
+                    </p>
+
+                    <!-- Primary Topic & Subtopics -->
+                    <div class="mb-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Primary Topic</div>
+                        <div class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-800 text-slate-200 border border-slate-700">
+                            {{ feed.primary_topic }}
+                        </div>
+                    </div>
+
+                    <!-- Subtopics Pills -->
+                    {% if feed.sub_topics %}
+                        <div class="flex flex-wrap gap-1.5 mb-4">
+                            {% for topic in feed.sub_topics[:3] %}
+                                <span class="text-[11px] px-2 py-0.5 rounded bg-slate-950/60 text-slate-400 border border-slate-800">
+                                    #{{ topic }}
+                                </span>
+                            {% endfor %}
+                            {% if feed.sub_topics|length > 3 %}
+                                <span class="text-[11px] px-1.5 py-0.5 rounded bg-slate-950/60 text-slate-500 border border-slate-800">
+                                    +{{ feed.sub_topics|length - 3 }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Evidence Snippets -->
+                    {% if feed.evidence %}
+                        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 mb-5">
+                            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Gemma Evidence</div>
+                            <ul class="text-xs text-slate-400 space-y-1">
+                                {% for ev in feed.evidence[:2] %}
+                                    <li class="flex items-start gap-1.5 line-clamp-1">
+                                        <span class="text-orange-400 text-[10px] mt-0.5">&bull;</span>
+                                        <span>{{ ev }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Bottom Action Buttons: Copy RSS URL & Details -->
+                <div class="pt-4 border-t border-slate-800/80 flex items-center gap-2">
+                    <button 
+                        type="button" 
+                        onclick="copyToClipboard('{{ feed.feed_url }}', '{{ feed.title|escape }} RSS URL')"
+                        class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-slate-800 hover:bg-orange-600 hover:text-white transition-all active:scale-95 border border-slate-700 hover:border-orange-500">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
+                        <span>Copy RSS URL</span>
+                    </button>
+
+                    <a 
+                        href="/feed/{{ feed.id }}"
+                        class="px-3 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-950 hover:bg-slate-800 hover:text-white border border-slate-800 transition-colors">
+                        Details
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16 px-4 bg-slate-900/40 rounded-3xl border border-dashed border-slate-800">
+        <div class="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4 text-slate-400">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">No Approved Feeds Match Filters</h3>
+        <p class="text-sm text-slate-400 max-w-md mx-auto mb-6">
+            Try adjusting your search query, or ingest a new feed URL through the onboarding engine.
+        </p>
+        <div class="flex items-center justify-center gap-3">
+            <a href="/" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors">
+                Clear Filters
+            </a>
+            <a href="/onboarding" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-orange-600 hover:bg-orange-500 transition-colors">
+                + Ingest Feed
+            </a>
+        </div>
+    </div>
+{% endif %}

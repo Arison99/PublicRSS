@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Review Proposal: {{ proposal.raw_title }} - PublicRSS{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Top Breadcrumb & Status Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+            <a href="/review" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-white">Proposal #{{ proposal.id }}</h1>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                        {% if proposal.status == 'APPROVED' or proposal.status == 'EDITED_APPROVED' %}bg-emerald-500/20 text-emerald-300 border border-emerald-500/30
+                        {% elif proposal.status == 'REJECTED' %}bg-rose-500/20 text-rose-300 border border-rose-500/30
+                        {% else %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% endif %}">
+                        {{ proposal.status.replace('_', ' ') }}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 mt-0.5">Ingested {{ proposal.created_at }}</p>
+            </div>
+        </div>
+
+        <!-- Action Quick Trigger Bar -->
+        <div class="flex items-center gap-2">
+            {% if proposal.status == 'PENDING_REVIEW' %}
+                <!-- Approve Form -->
+                <form method="POST" action="/review/{{ proposal.id }}/approve">
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-600/20">
+                        ✓ Approve & Publish
+                    </button>
+                </form>
+
+                <!-- Edit Toggle Button -->
+                <button type="button" onclick="document.getElementById('edit-proposal-panel').scrollIntoView({ behavior: 'smooth' }); document.getElementById('primary_topic_input').focus();" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700">
+                    ✎ Edit Fields
+                </button>
+
+                <!-- Reject Button (Modal Toggle) -->
+                <button type="button" onclick="document.getElementById('reject-dialog').classList.toggle('hidden')" class="px-3 py-2 rounded-xl text-xs font-bold text-rose-300 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/50 transition-colors">
+                    ✕ Reject
+                </button>
+            {% else %}
+                <span class="text-xs text-slate-400">
+                    Resolution: <strong class="text-white">{{ proposal.status }}</strong>
+                </span>
+                <a href="/" class="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 transition-colors">
+                    View in Directory &rarr;
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reject Confirmation Box (Hidden by default) -->
+    <div id="reject-dialog" class="hidden p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 space-y-3">
+        <h4 class="text-sm font-bold text-rose-200">Confirm Rejection of Proposal</h4>
+        <form method="POST" action="/review/{{ proposal.id }}/reject" class="flex flex-col sm:flex-row gap-2">
+            <input type="text" name="rejection_reason" placeholder="Reason for rejection (e.g. Low quality, malformed data, spam)" required class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition-colors flex-shrink-0">
+                Confirm Rejection
+            </button>
+            <button type="button" onclick="document.getElementById('reject-dialog').classList.add('hidden')" class="px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white bg-slate-900">
+                Cancel
+            </button>
+        </form>
+    </div>
+
+    <!-- SIDE-BY-SIDE MAIN VIEW -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+
+        <!-- ============================================== -->
+        <!-- LEFT COLUMN: Raw Ingested Feed Data            -->
+        <!-- ============================================== -->
+        <div class="space-y-6 bg-slate-900/80 rounded-3xl border border-slate-800 p-6 shadow-xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+                    <h2 class="text-base font-bold text-white">Raw Feed Data (Untrusted)</h2>
+                </div>
+                <span class="text-xs font-mono text-slate-400">
+                    {{ proposal.sample_articles|length }} sample items
+                </span>
+            </div>
+
+            <!-- Feed Channel Metadata -->
+            <div class="space-y-3 text-xs">
+                <div>
+                    <span class="text-slate-500 uppercase tracking-wider font-semibold block text-[10px]">Feed Title</span>
+                    <p class="text-base font-bold text-white mt-0.5">{{ proposal.raw_title }}</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold block text-[10px]">Publisher / Author</span>
+                        <p class="text-slate-200 mt-0.5">{{ proposal.raw_publisher or 'None specified' }}</p>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold block text-[10px]">Site URL</span>
+                        <p class="text-slate-200 truncate mt-0.5">
+                            {% if proposal.site_url %}
+                                <a href="{{ proposal.site_url }}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline">
+                                    {{ proposal.site_url }}
+                                </a>
+                            {% else %}
+                                None
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-slate-500 uppercase tracking-wider font-semibold block text-[10px]">Feed Endpoint</span>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <input readonly value="{{ proposal.feed_url }}" class="flex-1 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 text-[11px] font-mono text-slate-300">
+                        <button type="button" onclick="copyToClipboard('{{ proposal.feed_url }}')" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        </button>
+                    </div>
+                </div>
+
+                {% if proposal.raw_description %}
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold block text-[10px]">Channel Description</span>
+                        <p class="text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800/80 leading-relaxed mt-1">
+                            {{ proposal.raw_description }}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Sample Articles List -->
+            <div class="space-y-3 pt-4 border-t border-slate-800">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                        Sample Articles Sent to Gemma (Bounded 7 Max)
+                    </span>
+                    <span class="text-[10px] text-slate-500 font-mono">No URLs sent to model</span>
+                </div>
+
+                <div class="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                    {% for article in proposal.sample_articles %}
+                        <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800/80 space-y-1.5 text-xs">
+                            <div class="flex items-start justify-between gap-2">
+                                <h4 class="font-bold text-slate-200 leading-snug">
+                                    {{ article.title }}
+                                </h4>
+                                {% if article.published %}
+                                    <span class="text-[10px] text-slate-500 whitespace-nowrap font-mono">
+                                        {{ article.published[:16] }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {% if article.summary %}
+                                <p class="text-slate-400 text-[11px] leading-relaxed line-clamp-3">
+                                    {{ article.summary }}
+                                </p>
+                            {% endif %}
+
+                            {% if article.link %}
+                                <div class="pt-1 text-[10px]">
+                                    <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="text-orange-400 hover:underline">
+                                        Original Article Link &rarr;
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-xs text-slate-500 italic">No sample articles found in stream.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- RIGHT COLUMN: Gemma AI Proposal & Curator Edit -->
+        <!-- ============================================== -->
+        <div class="space-y-6">
+
+            <!-- Proposal Overview Card -->
+            <div class="bg-slate-900/90 rounded-3xl border border-slate-800 p-6 shadow-xl space-y-5">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange-400"></span>
+                        <h2 class="text-base font-bold text-white">Gemma AI Proposal</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                            Attempts: {{ proposal.validation_attempts }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- AI Output Display -->
+                <div class="space-y-4 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block">Primary Topic</span>
+                            <span class="text-sm font-bold text-white mt-0.5 block">{{ proposal.primary_topic }}</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block">Suggested Collection</span>
+                            <span class="text-sm font-bold text-orange-400 mt-0.5 block">{{ proposal.suggested_collection }}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block">Target Audience</span>
+                            <span class="font-bold text-slate-200 mt-0.5 block uppercase tracking-wide">{{ proposal.target_audience }}</span>
+                        </div>
+
+                        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                            <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block">Content Tone</span>
+                            <span class="font-bold text-slate-200 mt-0.5 block uppercase tracking-wide">{{ proposal.content_tone }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Sub Topics -->
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block mb-1.5">Sub Topics</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            {% for st in proposal.sub_topics %}
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-300 border border-slate-800">
+                                    {{ st }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Content Types -->
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block mb-1.5">Content Formats</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            {% for ct in proposal.content_types %}
+                                <span class="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-300 border border-orange-500/20">
+                                    {{ ct }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Synthesized Description -->
+                    <div>
+                        <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block mb-1.5">Synthesized Feed Description</span>
+                        <p class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 leading-relaxed">
+                            {{ proposal.description }}
+                        </p>
+                    </div>
+
+                    <!-- Evidence -->
+                    {% if proposal.evidence %}
+                        <div>
+                            <span class="text-slate-500 uppercase tracking-wider font-semibold text-[10px] block mb-1.5">Gemma Evidence Observations</span>
+                            <ul class="space-y-1.5">
+                                {% for ev in proposal.evidence %}
+                                    <li class="flex items-center gap-2 p-2 rounded-lg bg-slate-950 border border-slate-800/80 text-slate-300">
+                                        <span class="text-orange-400 font-bold">&bull;</span>
+                                        <span>{{ ev }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Raw AI JSON Inspector Dropdown -->
+                    {% if proposal.raw_ai_response %}
+                        <details class="pt-2 text-[11px]">
+                            <summary class="cursor-pointer text-slate-400 hover:text-white font-medium select-none">
+                                View Raw Model Response & JSON Payload
+                            </summary>
+                            <pre class="mt-2 p-3 rounded-xl bg-black border border-slate-800 text-slate-300 font-mono text-[10px] overflow-x-auto whitespace-pre-wrap">{{ proposal.raw_ai_response }}</pre>
+                        </details>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Curator Edit & Refine Form -->
+            <div id="edit-proposal-panel" class="bg-slate-900/90 rounded-3xl border border-slate-800 p-6 shadow-xl space-y-4">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
+                        <span>✎ Curator Edit & Fine-Tune</span>
+                    </h3>
+                    <span class="text-[10px] text-slate-400">Modifications are validated by Pydantic schema</span>
+                </div>
+
+                <form method="POST" action="/review/{{ proposal.id }}/edit" class="space-y-4 text-xs">
+                    <!-- Primary Topic -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Primary Topic (1-3 words, distinct from title)</label>
+                        <input type="text" id="primary_topic_input" name="primary_topic" value="{{ proposal.primary_topic }}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <!-- Suggested Collection -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Suggested Collection (max 50 chars)</label>
+                        <input type="text" name="suggested_collection" value="{{ proposal.suggested_collection }}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <!-- Sub Topics (comma separated) -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Sub Topics (comma separated)</label>
+                        <input type="text" name="sub_topics" value="{{ proposal.sub_topics|join(', ') }}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <!-- Audience & Tone Selects -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Target Audience</label>
+                            <select name="target_audience" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                                {% for aud in audiences %}
+                                    <option value="{{ aud }}" {% if proposal.target_audience == aud %}selected{% endif %}>{{ aud|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-slate-300 font-semibold mb-1">Content Tone</label>
+                            <select name="content_tone" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                                {% for ton in tones %}
+                                    <option value="{{ ton }}" {% if proposal.content_tone == ton %}selected{% endif %}>{{ ton|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Content Types Checkboxes -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1.5">Content Formats</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            {% for ct in content_types %}
+                                <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-300 hover:text-white cursor-pointer">
+                                    <input type="checkbox" name="content_types" value="{{ ct }}" {% if ct in proposal.content_types %}checked{% endif %} class="rounded bg-slate-900 border-slate-700 text-orange-500 focus:ring-orange-500">
+                                    <span>{{ ct }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Feed Description (20 - 300 chars)</label>
+                        <textarea name="description" rows="3" required class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500 leading-relaxed">{{ proposal.description }}</textarea>
+                    </div>
+
+                    <!-- Evidence -->
+                    <div>
+                        <label class="block text-slate-300 font-semibold mb-1">Evidence Phrases (comma separated, max 3)</label>
+                        <input type="text" name="evidence" value="{{ proposal.evidence|join(', ') }}" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 focus:outline-none focus:ring-1 focus:ring-orange-500">
+                    </div>
+
+                    <div class="pt-2 flex items-center justify-end gap-2">
+                        <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/20 transition-all">
+                            Save Edits & Approve
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

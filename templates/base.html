@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PublicRSS - AI-Assisted RSS Discovery Engine{% endblock %}</title>
+    <meta name="description" content="Curated directory and AI-assisted ingestion engine for RSS/Atom feeds using Gemma intelligence.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        },
+                        rss: {
+                            500: '#f97316',
+                            600: '#ea580c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- HTMX CDN -->
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        }
+        code, pre, .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline-flex;
+        }
+        .htmx-request.htmx-indicator {
+            display: inline-flex;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col bg-slate-950 text-slate-100">
+
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="/" class="flex items-center gap-2.5 group">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:scale-105 transition-transform">
+                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18c0-6.627 5.373-12 12-12m-12 6c0-3.314 2.686-6 6-6m-6 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-extrabold text-lg tracking-tight text-white">Public<span class="text-orange-400">RSS</span></span>
+                        <span class="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">MVP</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 -mt-0.5">Gemma Discovery Engine</p>
+                </div>
+            </a>
+
+            <!-- Nav Links -->
+            <nav class="flex items-center gap-2 sm:gap-4">
+                <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.path == '/' %}bg-slate-800 text-white{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+                    Directory
+                </a>
+                <a href="/onboarding" class="px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.path.startswith('/onboarding') %}bg-slate-800 text-white{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+                    + Ingest Feed
+                </a>
+                <a href="/review" class="relative px-3 py-2 rounded-lg text-sm font-medium transition-colors {% if request.path.startswith('/review') %}bg-slate-800 text-white{% else %}text-slate-400 hover:text-slate-200 hover:bg-slate-900{% endif %}">
+                    <span>Curator Review</span>
+                    {% if pending_proposals_count is defined and pending_proposals_count > 0 %}
+                        <span class="ml-1.5 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-amber-950 bg-amber-400 rounded-full animate-pulse">
+                            {{ pending_proposals_count }}
+                        </span>
+                    {% endif %}
+                </a>
+            </nav>
+
+            <!-- Quick Action -->
+            <div class="hidden sm:flex items-center gap-3">
+                <a href="/onboarding" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-md shadow-orange-500/20 transition-all hover:shadow-orange-500/30 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Analyze URL</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="space-y-2">
+                    {% for category, message in messages %}
+                        <div class="flex items-center justify-between p-3.5 rounded-xl border text-sm font-medium transition-all shadow-lg
+                            {% if category == 'success' %}bg-emerald-950/60 border-emerald-500/40 text-emerald-200
+                            {% elif category == 'error' %}bg-rose-950/60 border-rose-500/40 text-rose-200
+                            {% elif category == 'warning' %}bg-amber-950/60 border-amber-500/40 text-amber-200
+                            {% else %}bg-slate-900 border-slate-700 text-slate-200{% endif %}">
+                            <div class="flex items-center gap-2.5">
+                                {% if category == 'success' %}
+                                    <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                {% elif category == 'error' %}
+                                    <svg class="w-5 h-5 text-rose-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                {% elif category == 'warning' %}
+                                    <svg class="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                                {% else %}
+                                    <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                {% endif %}
+                                <span>{{ message }}</span>
+                            </div>
+                            <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors">
+                                &times;
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-8 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-semibold text-slate-400">PublicRSS Discovery MVP</span>
+                <span>&bull;</span>
+                <span>Model-View-Template (Flask) Architecture</span>
+                <span>&bull;</span>
+                <span>Zero Build Pipelines</span>
+            </div>
+            <div class="flex items-center gap-4 text-slate-400">
+                <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900 border border-slate-800 font-mono text-[11px]">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Gemma Intelligence Contract Active</span>
+                </span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Global Toast Notification Container for Copied URLs -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- Vanilla JavaScript Helpers -->
+    <script src="/static/js/main.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

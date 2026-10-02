@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ feed.title }} - PublicRSS Directory{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+
+    <!-- Top Navigation Back -->
+    <div>
+        <a href="/" class="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors">
+            <span>&larr;</span>
+            <span>Back to Public Directory</span>
+        </a>
+    </div>
+
+    <!-- Feed Header Card -->
+    <div class="bg-slate-900 rounded-3xl border border-slate-800 p-8 shadow-2xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                        {{ feed.suggested_collection }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-md text-xs font-semibold uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                        {{ feed.target_audience }}
+                    </span>
+                    <span class="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                        {{ feed.content_tone }}
+                    </span>
+                </div>
+
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white">
+                    {{ feed.title }}
+                </h1>
+
+                {% if feed.publisher %}
+                    <p class="text-sm text-slate-400">
+                        Published by <span class="font-semibold text-slate-200">{{ feed.publisher }}</span>
+                    </p>
+                {% endif %}
+            </div>
+
+            <!-- Action: Copy RSS URL -->
+            <button 
+                type="button" 
+                onclick="copyToClipboard('{{ feed.feed_url }}', '{{ feed.title|escape }} RSS URL')"
+                class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold text-white bg-orange-600 hover:bg-orange-500 shadow-lg shadow-orange-600/20 transition-all active:scale-95 flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span>Copy RSS URL</span>
+            </button>
+        </div>
+
+        <!-- Description -->
+        <p class="text-slate-300 text-base leading-relaxed bg-slate-950 p-4 rounded-2xl border border-slate-800">
+            {{ feed.ai_description }}
+        </p>
+
+        <!-- Topic Tags -->
+        <div class="space-y-2">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider block">Topics & Tags</span>
+            <div class="flex flex-wrap gap-2">
+                <span class="px-3 py-1 rounded-xl text-xs font-bold bg-slate-800 text-white border border-slate-700">
+                    {{ feed.primary_topic }}
+                </span>
+                {% for sub in feed.sub_topics %}
+                    <span class="px-3 py-1 rounded-xl text-xs font-medium bg-slate-950 text-slate-300 border border-slate-800">
+                        #{{ sub }}
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Endpoint Details -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800 text-xs">
+            <div>
+                <span class="text-slate-500 font-semibold uppercase tracking-wider text-[10px] block">RSS Feed URL</span>
+                <p class="font-mono text-slate-300 mt-1 truncate bg-slate-950 p-2 rounded-lg border border-slate-800">
+                    {{ feed.feed_url }}
+                </p>
+            </div>
+            {% if feed.site_url %}
+                <div>
+                    <span class="text-slate-500 font-semibold uppercase tracking-wider text-[10px] block">Official Website</span>
+                    <p class="font-mono text-orange-400 mt-1 truncate bg-slate-950 p-2 rounded-lg border border-slate-800">
+                        <a href="{{ feed.site_url }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                            {{ feed.site_url }}
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sample Articles in Stream -->
+    {% if sample_articles %}
+        <div class="space-y-4">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>Sample Articles & Recent Posts</span>
+                <span class="text-xs font-normal text-slate-400">({{ sample_articles|length }} items)</span>
+            </h3>
+
+            <div class="space-y-3">
+                {% for art in sample_articles %}
+                    <div class="bg-slate-900/70 rounded-2xl border border-slate-800 p-5 space-y-2">
+                        <div class="flex items-start justify-between gap-4">
+                            <h4 class="font-bold text-white text-sm">
+                                {{ art.title }}
+                            </h4>
+                            {% if art.published %}
+                                <span class="text-xs font-mono text-slate-500 whitespace-nowrap">
+                                    {{ art.published[:16] }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if art.summary %}
+                            <p class="text-xs text-slate-400 leading-relaxed">
+                                {{ art.summary }}
+                            </p>
+                        {% endif %}
+
+                        {% if art.link %}
+                            <div class="pt-1">
+                                <a href="{{ art.link }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-orange-400 hover:text-orange-300">
+                                    Read Article &rarr;
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}
