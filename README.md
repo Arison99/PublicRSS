@@ -301,7 +301,7 @@ Contributions are warmly welcomed! Whether you are fixing a bug, adding new cura
 1. **Fork the repository** on GitHub.
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/your-username/publicrss.git
+   git clone https://github.com/arison99/publicrss.git
    cd publicrss
    ```
 3. **Create a new branch** for your feature or bugfix:
@@ -334,7 +334,7 @@ Contributions are warmly welcomed! Whether you are fixing a bug, adding new cura
 
 If you find a bug, have a question, or would like to propose a feature:
 
-1. Check the [Issues tab](https://github.com/your-username/publicrss/issues) to see if the topic has already been discussed.
+1. Check the [Issues tab](https://github.com/arison99/publicrss/issues) to see if the topic has already been discussed.
 2. If not, open a **New Issue** with:
    * A clear title describing the problem.
    * Steps to reproduce the issue.
